@@ -13,7 +13,7 @@ def clean_yield_data(file_path, output_path):
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values('Date').reset_index(drop=True)
     
-    # 5. Outlier Detection & Normalisation (Spike-Reversal Filter)
+    # 4. Outlier Detection & Normalisation (Spike-Reversal Filter)
     # We do this BEFORE reindexing to ensure single-day spikes aren't duplicated by forward-fill
     yield_cols = [col for col in df.columns if col != 'Date']
     cleaned_df = df.copy()
@@ -42,7 +42,7 @@ def clean_yield_data(file_path, output_path):
         
         cleaned_df[col] = y
 
-    # 4. Handle Non-Trading Days (Reindex to Business Days)
+    # 5. Handle Non-Trading Days (Reindex to Business Days)
     # This ensures a constant time step delta_t = 1/252 between consecutive observations
     cleaned_df = cleaned_df.set_index('Date')
     all_bdays = pd.date_range(start=cleaned_df.index.min(), end=cleaned_df.index.max(), freq='B')
