@@ -55,5 +55,47 @@ print(f"theta: {theta_ols:.6f}")
 print(f"sigma: {sigma_ols:.6f}")
 print(f"Feller Condition (2*kappa*theta >= sigma^2): {2*kappa_ols*theta_ols >= sigma_ols**2} ({2*kappa_ols*theta_ols:.6f} vs {sigma_ols**2:.6f})\n")
 
+# ==============================================================================
+# 2. TIME-SERIES CALIBRATION: MAXIMUM LIKELIHOOD ESTIMATION (MLE)
+# ==============================================================================
+def cir_neg_log_likelihood(params, r, dt):
+    kappa, theta, sigma = params
+    if kappa <= 0 or theta <= 0 or sigma <= 0:
+        return 1e10
+    
+    r_t = r[:-1]
+    r_t_plus = r[1:]
+    
+    # Transition parameters
+    c = 2 * kappa / (sigma**2 * (1 - np.exp(-kappa * dt)))
+    df_df = 4 * kappa * theta / sigma**2
+    nc = 2 * c * r_t * np.exp(-kappa * dt)
+    
+    # Avoid zero division or overflow
+    # Transition probability follows a non-central chi-squared density for 2 * c * r_t_plus
+    val = 2 * c * r_t_plus
+    
+    # Using scipy.stats.ncx2.pdf
+    pdf = ncx2.pdf(val, df=df_df, nc=nc)
+    
+    # Check for zeros or NaNs in pdf to prevent log(0)
+    pdf = np.maximum(pdf, 1e-12)
+    
+    # Log likelihood includes the Jacobian term 2*c
+    log_lik = np.log(2 * c) + np.log(pdf)
+    return -np.sum(log_lik)
 
-# Note: OLS kappa is negative (-0.2439) due to upward trending rates in training data. Makes simulation explosive.
+res_mle = minimize(
+    cir_neg_log_likelihood, 
+    x0=[kappa_ols, theta_ols, sigma_ols], 
+    bounds=[(1e-3, 10.0), (1e-3, 0.2), (1e-3, 1.0)],
+    args=(r_train, dt), 
+    method='L-BFGS-B'
+)
+kappa_mle, theta_mle, sigma_mle = res_mle.x
+print("=== MLE Time-Series Calibration ===")
+print(f"kappa: {kappa_mle:.6f}")
+print(f"theta: {theta_mle:.6f}")
+print(f"sigma: {sigma_mle:.6f}")
+print(f"Feller Condition (2*kappa*theta >= sigma^2): {2*kappa_mle*theta_mle >= sigma_mle**2} ({2*kappa_mle*theta_mle:.6f} vs {sigma_mle**2:.6f})\n")
+
