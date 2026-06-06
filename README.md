@@ -35,7 +35,7 @@ The MLE model under the risk-neutral measure $\mathbb{Q}$ was the clear winner, 
 
 ## Data Preprocessing
 
-The raw daily data contains transcription errors and trading gaps. The preprocessing pipeline:
+The raw data had a few issues worth noting. The preprocessing pipeline:
 * **Strips whitespace:** Cleans column headers.
 * **Filters outlier spikes:** Detects single-day yield jumps/drops exceeding $4\sigma$ of daily moves that immediately reverse. Running this filter *before* reindexing ensures that holiday gaps (like Veterans Day on November 11, 2020) do not duplicate the spike via forward-filling. This successfully corrects the November 10, 2020 outlier from `0.406%` to `0.149%`.
 * **Aligns to business days:** Reindexes to a business-day calendar (`freq='B'`) and forward-fills weekends/market holidays ($\Delta t = 1/252$ year).
