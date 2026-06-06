@@ -55,3 +55,5 @@ print(f"theta: {theta_ols:.6f}")
 print(f"sigma: {sigma_ols:.6f}")
 print(f"Feller Condition (2*kappa*theta >= sigma^2): {2*kappa_ols*theta_ols >= sigma_ols**2} ({2*kappa_ols*theta_ols:.6f} vs {sigma_ols**2:.6f})\n")
 
+
+# Note: OLS kappa is negative (-0.2439) due to upward trending rates in training data. Makes simulation explosive.
